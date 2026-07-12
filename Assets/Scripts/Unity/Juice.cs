@@ -65,9 +65,16 @@ namespace ZenTetris.Unity
         {
             Bounce(1.6f); // yumuşak (~0.23 hücre dip)
             var color = (Color)BlockSprites.ColorOf(Tetromino.ColorIndex(p.Type));
+
+            var pts = new System.Collections.Generic.List<Vector3>();
             foreach (var (x, y) in p.AbsoluteCells())
-                if (y < Board.VisibleHeight)
-                    Burst(new Vector3(x + 0.5f, y + 0.5f, 0), color, 3, 1.5f, 0.09f);
+                if (y < Board.VisibleHeight) pts.Add(new Vector3(x + 0.5f, y + 0.5f, 0));
+            if (pts.Count == 0) return;
+
+            // Eski: hücre başına 3 (~12). Yarıya indir -> ~6 toplam, rastgele hücrelerden.
+            int total = Mathf.RoundToInt(pts.Count * 3 * 0.5f);
+            for (int i = 0; i < total; i++)
+                Burst(pts[Random.Range(0, pts.Count)], color, 1, 1.5f, 0.09f);
         }
 
         void OnRowsCleared(System.Collections.Generic.IReadOnlyList<Cell> cells)
@@ -78,7 +85,7 @@ namespace ZenTetris.Unity
             {
                 if (c.Y >= Board.VisibleHeight) continue;
                 var color = (Color)BlockSprites.ColorOf(c.Color);
-                Burst(new Vector3(c.X + 0.5f, c.Y + 0.5f, 0), color, 6, 2.6f, 0.11f);
+                Burst(new Vector3(c.X + 0.5f, c.Y + 0.5f, 0), color, 2, 2.6f, 0.11f); // 6 -> 2 (2/3 az)
             }
         }
 

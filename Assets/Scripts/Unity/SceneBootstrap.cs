@@ -38,13 +38,13 @@ namespace ZenTetris.Unity
             bg.transform.position = new Vector3(5f, 10f, 0);
             bg.transform.localScale = new Vector3(64f, 40f, 1f);
 
-            // Board görselleri tek bir grup altında -> juice bounce hepsini birlikte sektirir
-            var boardGroup = new GameObject("BoardGroup");
+            // Tüm görünür UI tek bir kök altında -> juice bounce hepsini senkron sektirir
+            // (arkaplan hariç). Board üst kenarı y=20.3; yan paneller de bu hizada.
+            var uiRoot = new GameObject("UIRoot");
 
             // Board arkaplanı (yuvarlak köşeli sıcak koyu panel, hücreleri çerçeveler)
             var boardPanel = MakeRoundedPanel("BoardPanel", new Vector3(5f, 10f, 0),
                              new Vector2(10.6f, 20.6f), Theme.BoardBackground, 0.6f, -2);
-            boardPanel.transform.SetParent(boardGroup.transform, true);
 
             // Boş hücreler (yuvarlak, boşluklu, soluk)
             var cells = new GameObject("Cells");
@@ -52,28 +52,33 @@ namespace ZenTetris.Unity
             csr.sprite = MakeCellsSprite();
             csr.sortingOrder = -1;
             cells.transform.position = new Vector3(5f, 10f, 0);
-            cells.transform.SetParent(boardGroup.transform, true);
 
-            // Yan paneller (yuvarlak köşeli)
-            MakeRoundedPanel("HoldPanel", new Vector3(-3.5f, 17.5f, 0), new Vector2(4f, 4f),
-                             Theme.Panel, 0.4f, -1);
-            MakeRoundedPanel("NextPanel", new Vector3(12.5f, 11.5f, 0), new Vector2(4f, 16f),
-                             Theme.Panel, 0.4f, -1);
+            // Yan paneller: üst kenarları board üst kenarıyla (20.3) hizalı;
+            // board'a uzaklıkları eşit (0.4 birim = eski Next boşluğunun 2 katı).
+            var holdPanel = MakeRoundedPanel("HoldPanel", new Vector3(-2.7f, 18.3f, 0),
+                             new Vector2(4f, 4f), Theme.Panel, 0.4f, -1);
+            var nextPanel = MakeRoundedPanel("NextPanel", new Vector3(12.7f, 12.3f, 0),
+                             new Vector2(4f, 16f), Theme.Panel, 0.4f, -1);
 
             // Bileşenler
             var renderer = new GameObject("BoardRenderer").AddComponent<BoardRenderer>();
             renderer.Init(state);
-            renderer.transform.SetParent(boardGroup.transform, true);
 
             var preview = new GameObject("Previews").AddComponent<PiecePreviewUI>();
-            preview.Init(state, new Vector3(-3.5f, 16.4f, 0), new Vector3(12.5f, 16.8f, 0));
+            preview.Init(state, new Vector3(-2.7f, 17.6f, 0), new Vector3(12.7f, 17.9f, 0));
 
             var hud = new GameObject("Hud").AddComponent<HudUI>();
             hud.Init(state);
 
-            // Juice: bounce + partiküller (board grubunu sektirir)
+            // Görünür her şeyi uiRoot altına al (arkaplan hariç)
+            foreach (var t in new[] { boardPanel.transform, cells.transform, holdPanel.transform,
+                                      nextPanel.transform, renderer.transform,
+                                      preview.transform, hud.transform })
+                t.SetParent(uiRoot.transform, true);
+
+            // Juice: bounce + partiküller (tüm UI kökünü sektirir)
             var juice = new GameObject("Juice").AddComponent<Juice>();
-            juice.Init(state, boardGroup.transform);
+            juice.Init(state, uiRoot.transform);
 
             var controller = gameObject.AddComponent<GameController>();
             controller.Init(state);

@@ -16,8 +16,8 @@ namespace ZenTetris.Unity
             state = s;
 
             // Panel etiketleri (panellerin içinde, üst kısımda)
-            MakeLabel("HOLD", new Vector3(-3.5f, 18.9f, 0), Theme.TextMuted);
-            MakeLabel("NEXT", new Vector3(12.5f, 18.9f, 0), Theme.TextMuted);
+            MakeLabel("HOLD", new Vector3(-2.7f, 19.5f, 0), Theme.TextMuted);
+            MakeLabel("NEXT", new Vector3(12.7f, 19.5f, 0), Theme.TextMuted);
 
             // Skor tasarımı: skor küçük/soluk üstte, seviye büyük altta, elmas sırası en altta
             scoreText = MakeText("Score", new Vector3(5f, -1.1f, 0), 4.5f, Theme.TextMuted);
