@@ -28,28 +28,23 @@ namespace ZenTetris.Unity
             cam.orthographic = true;
             cam.orthographicSize = 14f;                     // altta skor bloğuna yer aç
             cam.transform.position = new Vector3(5f, 9f, -10f);
-            cam.backgroundColor = Theme.BackgroundEdge;
+            // Arkaplan degradesi ve tema renkleri ThemeManager tarafından yönetilir.
 
-            // Arkaplan degradesi (sıcak radial vignette)
-            var bg = new GameObject("Background");
-            var bgsr = bg.AddComponent<SpriteRenderer>();
-            bgsr.sprite = MakeGradientSprite(Theme.BackgroundCenter, Theme.BackgroundEdge);
-            bgsr.sortingOrder = -3;
-            bg.transform.position = new Vector3(5f, 10f, 0);
-            bg.transform.localScale = new Vector3(64f, 40f, 1f);
+            var initial = Theme.ForLevel(state.Score.Level);
 
             // Tüm görünür UI tek bir kök altında -> juice bounce hepsini senkron sektirir
             // (arkaplan hariç). Board üst kenarı y=20.3; yan paneller de bu hizada.
             var uiRoot = new GameObject("UIRoot");
 
-            // Board arkaplanı (yuvarlak köşeli sıcak koyu panel, hücreleri çerçeveler)
+            // Board arkaplanı (yuvarlak köşeli panel; rengi temaya göre değişir)
             var boardPanel = MakeRoundedPanel("BoardPanel", new Vector3(5f, 10f, 0),
-                             new Vector2(10.6f, 20.6f), Theme.BoardBackground, 0.6f, -2);
+                             new Vector2(10.6f, 20.6f), initial.BoardBg, 0.6f, -2);
 
             // Boş hücreler (yuvarlak, boşluklu, soluk)
             var cells = new GameObject("Cells");
             var csr = cells.AddComponent<SpriteRenderer>();
             csr.sprite = MakeCellsSprite();
+            csr.color = Theme.EmptyCell;
             csr.sortingOrder = -1;
             cells.transform.position = new Vector3(5f, 10f, 0);
 
@@ -80,17 +75,23 @@ namespace ZenTetris.Unity
             var juice = new GameObject("Juice").AddComponent<Juice>();
             juice.Init(state, uiRoot.transform);
 
+            // Tema geçişleri (seviye değiştikçe yumuşak fade). Arkaplan bunun içinde.
+            var themeMgr = new GameObject("ThemeManager").AddComponent<ThemeManager>();
+            themeMgr.Init(state, boardPanel.GetComponent<SpriteRenderer>(), hud, cam);
+
             var controller = gameObject.AddComponent<GameController>();
             controller.Init(state);
         }
 
-        static GameObject MakeRoundedPanel(string name, Vector3 pos, Vector2 size, Color color,
+        // Beyaz basılı yuvarlak panel; gerçek renk sr.color ile verilir (temayla lerp).
+        static GameObject MakeRoundedPanel(string name, Vector3 pos, Vector2 size, Color tint,
                                            float radiusUnits, int order)
         {
             var go = new GameObject(name);
             var sr = go.AddComponent<SpriteRenderer>();
             int radiusPx = Mathf.RoundToInt(radiusUnits * 256f); // sprite 1 birim = 256px
-            sr.sprite = RoundedTex.RoundedPanel(color, radiusPx);
+            sr.sprite = RoundedTex.RoundedPanel(radiusPx);
+            sr.color = tint;
             sr.drawMode = SpriteDrawMode.Sliced;
             sr.size = size;
             sr.sortingOrder = order;
@@ -98,42 +99,19 @@ namespace ZenTetris.Unity
             return go;
         }
 
-        // Radial vignette: üstte sıcak, kenarlara/aşağıya doğru koyulaşan degrade.
-        static Sprite MakeGradientSprite(Color center, Color edge)
-        {
-            const int size = 256;
-            var tex = RoundedTex.NewTex(size, size, FilterMode.Bilinear);
-            tex.wrapMode = TextureWrapMode.Clamp;
-            float cx = 0.5f, cy = 0.85f;
-            for (int y = 0; y < size; y++)
-                for (int x = 0; x < size; x++)
-                {
-                    float nx = (float)x / (size - 1);
-                    float ny = (float)y / (size - 1);
-                    float dx = (nx - cx) * 0.85f;
-                    float dy = (ny - cy);
-                    float d = Mathf.Sqrt(dx * dx + dy * dy);
-                    float t = Mathf.Clamp01(d / 0.72f);
-                    tex.SetPixel(x, y, Color.Lerp(center, edge, t));
-                }
-            tex.Apply();
-            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
-        }
-
-        // Görünür board hücrelerini yuvarlak köşeli, boşluklu, soluk kareler olarak çizer.
+        // Boş hücreleri yuvarlak köşeli, boşluklu kareler olarak (beyaz basar; renk sr.color ile).
         static Sprite MakeCellsSprite()
         {
             const int ppu = 64;              // bloklarla aynı oran (margin/radius), makul doku boyutu
             const int margin = 4, radius = 14;
             int w = Board.Width * ppu, h = Board.VisibleHeight * ppu;
             var tex = RoundedTex.NewTex(w, h, FilterMode.Trilinear, mip: true);
-            var cell = Theme.EmptyCell;
             for (int py = 0; py < h; py++)
                 for (int px = 0; px < w; px++)
                 {
                     int lx = px % ppu, ly = py % ppu;
                     float cov = RoundedTex.Coverage(lx + 0.5f, ly + 0.5f, margin, ppu - 1 - margin, radius);
-                    tex.SetPixel(px, py, new Color(cell.r, cell.g, cell.b, cell.a * cov));
+                    tex.SetPixel(px, py, new Color(1f, 1f, 1f, cov));
                 }
             tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), ppu);

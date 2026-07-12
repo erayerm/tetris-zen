@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using ZenTetris.Core;
@@ -10,28 +11,38 @@ namespace ZenTetris.Unity
         TextMeshPro scoreText;
         TextMeshPro levelText;
         TextMeshPro pausedText;
+        readonly List<TextMeshPro> labels = new();      // HOLD / NEXT (muted)
+        readonly List<SpriteRenderer> pips = new();      // accent
 
         public void Init(GameState s)
         {
             state = s;
 
-            // Panel etiketleri (panellerin içinde, üst kısımda)
-            MakeLabel("HOLD", new Vector3(-2.7f, 19.5f, 0), Theme.TextMuted);
-            MakeLabel("NEXT", new Vector3(12.7f, 19.5f, 0), Theme.TextMuted);
+            MakeLabel("HOLD", new Vector3(-2.7f, 19.5f, 0));
+            MakeLabel("NEXT", new Vector3(12.7f, 19.5f, 0));
 
-            // Skor tasarımı: skor küçük/soluk üstte, seviye büyük altta, elmas sırası en altta
-            scoreText = MakeText("Score", new Vector3(5f, -1.1f, 0), 4.5f, Theme.TextMuted);
-            levelText = MakeText("Level", new Vector3(5f, -2.9f, 0), 13f, Theme.TextPrimary);
+            scoreText = MakeText("Score", new Vector3(5f, -1.1f, 0), 4.5f);
+            levelText = MakeText("Level", new Vector3(5f, -2.9f, 0), 13f);
             MakePips(new Vector3(5f, -4.2f, 0));
 
-            pausedText = MakeText("Paused", new Vector3(5f, 10f, 0), 12f, Theme.Accent);
+            pausedText = MakeText("Paused", new Vector3(5f, 10f, 0), 12f);
             pausedText.text = "PAUSED";
 
             state.Changed += Redraw;
             Redraw();
         }
 
-        TextMeshPro MakeText(string name, Vector3 pos, float size, Color color)
+        // Tema geçişinde ThemeManager çağırır.
+        public void ApplyColors(Color primary, Color muted, Color accent)
+        {
+            if (scoreText != null) scoreText.color = muted;
+            if (levelText != null) levelText.color = primary;
+            if (pausedText != null) pausedText.color = accent;
+            foreach (var l in labels) l.color = muted;
+            foreach (var p in pips) p.color = accent;
+        }
+
+        TextMeshPro MakeText(string name, Vector3 pos, float size)
         {
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);
@@ -39,20 +50,19 @@ namespace ZenTetris.Unity
             var t = go.AddComponent<TextMeshPro>();
             FontProvider.Apply(t);
             t.fontSize = size;
-            t.color = color;
             t.alignment = TextAlignmentOptions.Center;
             t.sortingOrder = 10;
             return t;
         }
 
-        void MakeLabel(string text, Vector3 pos, Color color)
+        void MakeLabel(string text, Vector3 pos)
         {
-            var t = MakeText("Label_" + text, pos, 5.32f, color);
+            var t = MakeText("Label_" + text, pos, 5.32f);
             t.text = text;
             t.characterSpacing = 10f;
+            labels.Add(t);
         }
 
-        // 4 küçük elmas (◆ ◇ ◇ □): ilki dolu, diğerleri çerçeve.
         void MakePips(Vector3 center)
         {
             var filled = PipSprite(true);
@@ -66,8 +76,8 @@ namespace ZenTetris.Unity
                 go.transform.localScale = Vector3.one * 0.6f;
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = i == 0 ? filled : outline;
-                sr.color = Theme.Accent;
                 sr.sortingOrder = 10;
+                pips.Add(sr);
             }
         }
 
@@ -94,7 +104,7 @@ namespace ZenTetris.Unity
             pausedText.gameObject.SetActive(state.Paused);
         }
 
-        void Update() // Paused, Changed tetiklemeden değişebilir
+        void Update()
         {
             if (state != null && pausedText.gameObject.activeSelf != state.Paused)
                 pausedText.gameObject.SetActive(state.Paused);
