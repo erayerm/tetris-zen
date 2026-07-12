@@ -15,7 +15,7 @@ namespace ZenTetris.Unity
         void Start()
         {
             var state = new GameState();
-            SaveSystem.Load(state.Score);
+            SaveSystem.Load(state); // skor + seviye + board (yerleşmiş taşlar)
 
             // Kamera
             var cam = Camera.main;

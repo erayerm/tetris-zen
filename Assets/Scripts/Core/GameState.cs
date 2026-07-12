@@ -37,6 +37,13 @@ namespace ZenTetris.Core
             Spawn();
         }
 
+        // Kayıttan board'u geri yükler (yerleşmiş taşlar).
+        public void LoadBoard(string serialized)
+        {
+            Board.Deserialize(serialized);
+            Changed?.Invoke();
+        }
+
         void Spawn()
         {
             var type = next[0];

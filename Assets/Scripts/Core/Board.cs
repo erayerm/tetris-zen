@@ -11,6 +11,25 @@ namespace ZenTetris.Core
         public int Get(int x, int y) => cells[y * Width + x];
         public void SetCell(int x, int y, int value) => cells[y * Width + x] = value;
 
+        // Kalıcı kayıt için: her hücre bir karakter ('0'..'7').
+        public string Serialize()
+        {
+            var chars = new char[cells.Length];
+            for (int i = 0; i < cells.Length; i++)
+                chars[i] = (char)('0' + (cells[i] & 7));
+            return new string(chars);
+        }
+
+        public void Deserialize(string s)
+        {
+            if (string.IsNullOrEmpty(s) || s.Length != cells.Length) return;
+            for (int i = 0; i < cells.Length; i++)
+            {
+                int v = s[i] - '0';
+                cells[i] = (v >= 0 && v <= 7) ? v : 0;
+            }
+        }
+
         public bool IsOccupied(int x, int y)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height) return true;

@@ -12,6 +12,8 @@ namespace ZenTetris.Unity
         {
             state = s;
             input = new InputHandler(s);
+            // Her taş kilitlendiğinde de kaydet -> çıkış olayı kaçsa bile board korunur.
+            state.PieceLocked += _ => SaveSystem.Save(state);
         }
 
         void Update()
@@ -21,11 +23,14 @@ namespace ZenTetris.Unity
             state.Tick(Time.deltaTime);
         }
 
-        void OnApplicationQuit() => SaveSystem.Save(state.Score);
+        void OnApplicationQuit()
+        {
+            if (state != null) SaveSystem.Save(state);
+        }
 
         void OnApplicationPause(bool paused)
         {
-            if (paused && state != null) SaveSystem.Save(state.Score);
+            if (paused && state != null) SaveSystem.Save(state);
         }
     }
 }

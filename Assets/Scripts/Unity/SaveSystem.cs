@@ -7,19 +7,23 @@ namespace ZenTetris.Unity
     {
         const string ScoreKey = "zen.score";
         const string LinesKey = "zen.lines";
+        const string BoardKey = "zen.board";
 
-        public static void Load(ScoreSystem s)
+        public static void Load(GameState g)
         {
-            long score = 0;
-            long.TryParse(PlayerPrefs.GetString(ScoreKey, "0"), out score);
+            long.TryParse(PlayerPrefs.GetString(ScoreKey, "0"), out long score);
             int lines = PlayerPrefs.GetInt(LinesKey, 0);
-            s.Load(score, lines);
+            g.Score.Load(score, lines);
+
+            var board = PlayerPrefs.GetString(BoardKey, "");
+            if (!string.IsNullOrEmpty(board)) g.LoadBoard(board);
         }
 
-        public static void Save(ScoreSystem s)
+        public static void Save(GameState g)
         {
-            PlayerPrefs.SetString(ScoreKey, s.Score.ToString());
-            PlayerPrefs.SetInt(LinesKey, s.TotalLines);
+            PlayerPrefs.SetString(ScoreKey, g.Score.Score.ToString());
+            PlayerPrefs.SetInt(LinesKey, g.Score.TotalLines);
+            PlayerPrefs.SetString(BoardKey, g.Board.Serialize());
             PlayerPrefs.Save();
         }
     }
