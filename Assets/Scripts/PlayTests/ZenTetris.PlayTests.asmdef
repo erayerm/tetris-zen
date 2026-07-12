@@ -1,0 +1,9 @@
+{
+  "name": "ZenTetris.PlayTests",
+  "rootNamespace": "ZenTetris.PlayTests",
+  "references": ["ZenTetris.Core", "ZenTetris.Unity", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "includePlatforms": [],
+  "precompiledReferences": ["nunit.framework.dll"],
+  "overrideReferences": true,
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}
