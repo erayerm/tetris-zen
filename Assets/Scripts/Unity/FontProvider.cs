@@ -15,7 +15,7 @@ namespace ZenTetris.Unity
             if (tried) return cached;
             tried = true;
 
-            Font src = Resources.Load<Font>("GameFont");
+            Font src = Resources.Load<Font>("GameFont") ?? Resources.Load<Font>("Gamefont");
             if (src == null)
             {
                 string[] preferred = { "Nunito", "Quicksand", "Baloo 2", "Fredoka",
