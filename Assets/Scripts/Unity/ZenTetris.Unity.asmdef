@@ -1,0 +1,5 @@
+{
+  "name": "ZenTetris.Unity",
+  "rootNamespace": "ZenTetris.Unity",
+  "references": ["ZenTetris.Core", "Unity.InputSystem", "Unity.TextMeshPro", "UnityEngine.UI"]
+}
