@@ -15,9 +15,9 @@ namespace ZenTetris.Unity
         {
             state = s;
 
-            // Panel etiketleri (mockup'taki gibi)
-            MakeLabel("HOLD", new Vector3(-3.5f, 20.2f, 0), Theme.TextMuted);
-            MakeLabel("NEXT", new Vector3(12.5f, 20.2f, 0), Theme.TextMuted);
+            // Panel etiketleri (panellerin içinde, üst kısımda)
+            MakeLabel("HOLD", new Vector3(-3.5f, 18.9f, 0), Theme.TextMuted);
+            MakeLabel("NEXT", new Vector3(12.5f, 18.9f, 0), Theme.TextMuted);
 
             // Skor tasarımı: skor küçük/soluk üstte, seviye büyük altta, elmas sırası en altta
             scoreText = MakeText("Score", new Vector3(5f, -0.6f, 0), 2.4f, Theme.TextMuted);
@@ -37,6 +37,7 @@ namespace ZenTetris.Unity
             go.transform.SetParent(transform, false);
             go.transform.localPosition = pos;
             var t = go.AddComponent<TextMeshPro>();
+            FontProvider.Apply(t);
             t.fontSize = size;
             t.color = color;
             t.alignment = TextAlignmentOptions.Center;

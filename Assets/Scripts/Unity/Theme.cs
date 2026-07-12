@@ -21,6 +21,7 @@ namespace ZenTetris.Unity
         // Yan paneller ve grid çizgileri: sıcak beyaz, düşük alfa
         public static readonly Color Panel = new Color(1f, 0.933f, 0.863f, 0.06f);
         public static readonly Color GridLine = new Color(1f, 0.910f, 0.831f, 0.05f);
+        public static readonly Color EmptyCell = new Color(1f, 0.910f, 0.831f, 0.05f);
 
         public static readonly Color TextPrimary = Hex("#F3E7D8");
         public static readonly Color TextMuted = Hex("#C9AB93");
