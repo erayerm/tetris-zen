@@ -1,0 +1,5 @@
+{
+  "name": "ZenTetris.Core",
+  "rootNamespace": "ZenTetris.Core",
+  "noEngineReferences": true
+}
