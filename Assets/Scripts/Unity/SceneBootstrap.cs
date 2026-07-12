@@ -26,8 +26,8 @@ namespace ZenTetris.Unity
                 cam = camGo.AddComponent<Camera>();
             }
             cam.orthographic = true;
-            cam.orthographicSize = 13f;
-            cam.transform.position = new Vector3(5f, 10f, -10f);
+            cam.orthographicSize = 14f;                     // altta skor bloğuna yer aç
+            cam.transform.position = new Vector3(5f, 9f, -10f);
             cam.backgroundColor = Theme.BackgroundEdge;
 
             // Arkaplan degradesi (sıcak radial vignette)
@@ -40,7 +40,7 @@ namespace ZenTetris.Unity
 
             // Board arkaplanı (yuvarlak köşeli sıcak koyu panel, hücreleri çerçeveler)
             MakeRoundedPanel("BoardPanel", new Vector3(5f, 10f, 0), new Vector2(10.6f, 20.6f),
-                             Theme.BoardBackground, 0.5f, -2);
+                             Theme.BoardBackground, 0.6f, -2);
 
             // Boş hücreler (yuvarlak, boşluklu, soluk)
             var cells = new GameObject("Cells");
@@ -51,16 +51,16 @@ namespace ZenTetris.Unity
 
             // Yan paneller (yuvarlak köşeli)
             MakeRoundedPanel("HoldPanel", new Vector3(-3.5f, 17.5f, 0), new Vector2(4f, 4f),
-                             Theme.Panel, 0.35f, -1);
+                             Theme.Panel, 0.4f, -1);
             MakeRoundedPanel("NextPanel", new Vector3(12.5f, 11.5f, 0), new Vector2(4f, 16f),
-                             Theme.Panel, 0.35f, -1);
+                             Theme.Panel, 0.4f, -1);
 
             // Bileşenler
             var renderer = new GameObject("BoardRenderer").AddComponent<BoardRenderer>();
             renderer.Init(state);
 
             var preview = new GameObject("Previews").AddComponent<PiecePreviewUI>();
-            preview.Init(state, new Vector3(-3.5f, 16.6f, 0), new Vector3(12.5f, 16.3f, 0));
+            preview.Init(state, new Vector3(-3.5f, 16.4f, 0), new Vector3(12.5f, 16.8f, 0));
 
             var hud = new GameObject("Hud").AddComponent<HudUI>();
             hud.Init(state);
@@ -74,7 +74,7 @@ namespace ZenTetris.Unity
         {
             var go = new GameObject(name);
             var sr = go.AddComponent<SpriteRenderer>();
-            int radiusPx = Mathf.RoundToInt(radiusUnits * 64f); // sprite 1 birim = 64px
+            int radiusPx = Mathf.RoundToInt(radiusUnits * 256f); // sprite 1 birim = 256px
             sr.sprite = RoundedTex.RoundedPanel(color, radiusPx);
             sr.drawMode = SpriteDrawMode.Sliced;
             sr.size = size;
@@ -107,8 +107,8 @@ namespace ZenTetris.Unity
         // Görünür board hücrelerini yuvarlak köşeli, boşluklu, soluk kareler olarak çizer.
         static Sprite MakeCellsSprite()
         {
-            const int ppu = BlockSprites.PPU;
-            const int margin = 2, radius = 7;
+            const int ppu = 64;              // bloklarla aynı oran (margin/radius), makul doku boyutu
+            const int margin = 4, radius = 14;
             int w = Board.Width * ppu, h = Board.VisibleHeight * ppu;
             var tex = RoundedTex.NewTex(w, h, FilterMode.Bilinear);
             var clear = new Color(0, 0, 0, 0);

@@ -27,9 +27,11 @@ namespace ZenTetris.Unity
             => new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = fm };
 
         // 9-slice ile ölçeklenebilen yuvarlak köşeli panel sprite'ı (kenarlar bozulmaz).
+        // radiusPx dokunun yarısını aşmamalı; aşarsa 9-slice'ın orta dilimi kalmaz.
         public static Sprite RoundedPanel(Color color, int radiusPx)
         {
-            const int s = 64;
+            const int s = 256; // yüksek çözünürlük -> pürüzsüz köşe
+            radiusPx = Mathf.Clamp(radiusPx, 2, s / 2 - 2);
             var tex = NewTex(s, s, FilterMode.Bilinear);
             var clear = new Color(0, 0, 0, 0);
             for (int y = 0; y < s; y++)

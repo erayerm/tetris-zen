@@ -20,11 +20,11 @@ namespace ZenTetris.Unity
             MakeLabel("NEXT", new Vector3(12.5f, 18.9f, 0), Theme.TextMuted);
 
             // Skor tasarımı: skor küçük/soluk üstte, seviye büyük altta, elmas sırası en altta
-            scoreText = MakeText("Score", new Vector3(5f, -0.6f, 0), 2.4f, Theme.TextMuted);
-            levelText = MakeText("Level", new Vector3(5f, -1.75f, 0), 6f, Theme.TextPrimary);
-            MakePips(new Vector3(5f, -2.7f, 0));
+            scoreText = MakeText("Score", new Vector3(5f, -1.1f, 0), 4.5f, Theme.TextMuted);
+            levelText = MakeText("Level", new Vector3(5f, -2.9f, 0), 13f, Theme.TextPrimary);
+            MakePips(new Vector3(5f, -4.2f, 0));
 
-            pausedText = MakeText("Paused", new Vector3(5f, 10f, 0), 8f, Theme.Accent);
+            pausedText = MakeText("Paused", new Vector3(5f, 10f, 0), 12f, Theme.Accent);
             pausedText.text = "PAUSED";
 
             state.Changed += Redraw;
@@ -47,9 +47,9 @@ namespace ZenTetris.Unity
 
         void MakeLabel(string text, Vector3 pos, Color color)
         {
-            var t = MakeText("Label_" + text, pos, 2.2f, color);
+            var t = MakeText("Label_" + text, pos, 4f, color);
             t.text = text;
-            t.characterSpacing = 12f;
+            t.characterSpacing = 10f;
         }
 
         // 4 küçük elmas (◆ ◇ ◇ □): ilki dolu, diğerleri çerçeve.
@@ -61,9 +61,9 @@ namespace ZenTetris.Unity
             {
                 var go = new GameObject("Pip" + i);
                 go.transform.SetParent(transform, false);
-                go.transform.localPosition = center + new Vector3((i - 1.5f) * 0.75f, 0, 0);
+                go.transform.localPosition = center + new Vector3((i - 1.5f) * 0.95f, 0, 0);
                 go.transform.localRotation = Quaternion.Euler(0, 0, 45f);
-                go.transform.localScale = Vector3.one * 0.42f;
+                go.transform.localScale = Vector3.one * 0.6f;
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = i == 0 ? filled : outline;
                 sr.color = Theme.Accent;

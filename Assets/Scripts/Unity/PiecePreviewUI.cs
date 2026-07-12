@@ -62,7 +62,7 @@ namespace ZenTetris.Unity
             if (state.Held.HasValue)
                 DrawPiece(state.Held.Value, holdOrigin, 0.8f, Color.white);
             for (int i = 0; i < state.NextQueue.Count; i++)
-                DrawPiece(state.NextQueue[i], nextOrigin + new Vector3(0, -i * 3f, 0), 0.8f, Color.white);
+                DrawPiece(state.NextQueue[i], nextOrigin + new Vector3(0, -i * 2.8f, 0), 0.8f, Color.white);
             for (int i = used; i < pool.Count; i++) pool[i].gameObject.SetActive(false);
         }
 
