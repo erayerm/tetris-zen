@@ -142,7 +142,7 @@ namespace ZenTetris.Core
             if (Paused) return;
 
             float gravity = GameConfig.GravityFor(Score.Level);
-            if (softDrop) gravity *= GameConfig.SoftDropMultiplier;
+            if (softDrop) gravity = System.Math.Max(gravity, GameConfig.SoftDropCellsPerSecond);
             float step = 1f / gravity;
 
             if (IsGrounded())

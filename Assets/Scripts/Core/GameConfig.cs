@@ -6,7 +6,7 @@ namespace ZenTetris.Core
         public const float Arr = 0.033f;
         public const float LockDelay = 0.5f;
         public const int MaxLockResets = 15;
-        public const float SoftDropMultiplier = 20f;
+        public const float SoftDropCellsPerSecond = 8f; // soft drop sabit hız (seviyeden bağımsız)
         public const float BaseGravity = 1f;      // hücre/sn, seviye 1
         public const float GravityPerLevel = 0.5f;
         public const float MaxGravity = 12f;
