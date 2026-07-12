@@ -5,6 +5,8 @@
 [Bb]uilds/
 *.zip
 release-notes.txt
+Assets/Resources/PerformanceTestRun*.json
+Assets/Resources/PerformanceTestRun*.json.meta
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
