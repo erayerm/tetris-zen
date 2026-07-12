@@ -9,66 +9,61 @@ namespace ZenTetris.Unity
         static readonly Dictionary<int, Sprite> solid = new();
         static readonly Dictionary<int, Sprite> ghost = new();
 
-        const int Margin = 1;   // hücreler arası ince saydam boşluk
-        const int Radius = 6;   // köşe yuvarlaklığı
-
         public static Color32 ColorOf(int colorIndex) => Theme.Blocks[colorIndex];
 
-        public static Sprite Solid(int colorIndex) => Get(solid, colorIndex, 1f);
-        public static Sprite Ghost(int colorIndex) => Get(ghost, colorIndex, 0.28f);
+        public static Sprite Solid(int colorIndex) => GetSolid(colorIndex);
+        public static Sprite Ghost(int colorIndex) => GetGhost(colorIndex);
 
-        static Sprite Get(Dictionary<int, Sprite> cache, int colorIndex, float alpha)
+        // Tam kare, mat düz dolgu: hafif üst parlaklık + ince koyu kenar (hücre ayrımı).
+        static Sprite GetSolid(int colorIndex)
         {
-            if (cache.TryGetValue(colorIndex, out var s)) return s;
+            if (solid.TryGetValue(colorIndex, out var s)) return s;
 
             var baseColor = (Color)Theme.Blocks[colorIndex];
-            var highlight = baseColor * 1.14f; highlight.a = 1f; // üstte ince açık kenar
+            var highlight = baseColor * 1.12f; highlight.a = 1f;
+            var edge = baseColor * 0.82f; edge.a = 1f;
 
-            var tex = new Texture2D(PPU, PPU, TextureFormat.RGBA32, false)
-            {
-                filterMode = FilterMode.Bilinear
-            };
-
-            int lo = Margin, hi = PPU - 1 - Margin;
-            var clear = new Color(0, 0, 0, 0);
-
+            var tex = NewTex();
             for (int y = 0; y < PPU; y++)
                 for (int x = 0; x < PPU; x++)
                 {
-                    if (x < lo || x > hi || y < lo || y > hi || !InRoundedRect(x, y, lo, hi))
-                    {
-                        tex.SetPixel(x, y, clear);
-                        continue;
-                    }
-
-                    Color c = (y >= hi - 2) ? highlight : baseColor; // üst kenar parlaklığı
-                    c.a = alpha;
+                    Color c = baseColor;
+                    if (y >= PPU - 2) c = highlight;                               // üst kenar
+                    else if (x == 0 || y == 0 || x == PPU - 1 || y == PPU - 1) c = edge; // 1px çerçeve
                     tex.SetPixel(x, y, c);
                 }
-
             tex.Apply();
+            return Cache(solid, colorIndex, tex);
+        }
+
+        // Hayalet (düşüş önizlemesi): dış kenara yakın renkli çerçeve, içi şeffaf.
+        static Sprite GetGhost(int colorIndex)
+        {
+            if (ghost.TryGetValue(colorIndex, out var s)) return s;
+
+            var col = (Color)Theme.Blocks[colorIndex];
+            var clear = new Color(0, 0, 0, 0);
+            const int border = 3;
+
+            var tex = NewTex();
+            for (int y = 0; y < PPU; y++)
+                for (int x = 0; x < PPU; x++)
+                {
+                    bool onBorder = x < border || y < border || x >= PPU - border || y >= PPU - border;
+                    tex.SetPixel(x, y, onBorder ? new Color(col.r, col.g, col.b, 0.55f) : clear);
+                }
+            tex.Apply();
+            return Cache(ghost, colorIndex, tex);
+        }
+
+        static Texture2D NewTex() =>
+            new Texture2D(PPU, PPU, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
+
+        static Sprite Cache(Dictionary<int, Sprite> cache, int colorIndex, Texture2D tex)
+        {
             var sprite = Sprite.Create(tex, new Rect(0, 0, PPU, PPU), new Vector2(0.5f, 0.5f), PPU);
             cache[colorIndex] = sprite;
             return sprite;
-        }
-
-        // Yuvarlatılmış dikdörtgen içi mi? Köşelerde çeyrek daire testi.
-        static bool InRoundedRect(int x, int y, int lo, int hi)
-        {
-            int r = Radius;
-            int left = lo + r, right = hi - r, bottom = lo + r, top = hi - r;
-            float cx = x, cy = y;
-            if (x < left && y < bottom) return Dist(cx, cy, left, bottom) <= r;
-            if (x > right && y < bottom) return Dist(cx, cy, right, bottom) <= r;
-            if (x < left && y > top) return Dist(cx, cy, left, top) <= r;
-            if (x > right && y > top) return Dist(cx, cy, right, top) <= r;
-            return true;
-        }
-
-        static float Dist(float x, float y, float ax, float ay)
-        {
-            float dx = x - ax, dy = y - ay;
-            return Mathf.Sqrt(dx * dx + dy * dy);
         }
     }
 }

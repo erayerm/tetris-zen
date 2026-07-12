@@ -98,15 +98,17 @@ namespace ZenTetris.Unity
                 filterMode = FilterMode.Bilinear,
                 wrapMode = TextureWrapMode.Clamp
             };
-            // Merkez üst-ortada (mockup: 50% 12%)
-            float cx = 0.5f, cy = 0.82f;
+            // Merkez üst-ortada, yatayda hafif geniş (mockup: 120% 90% at 50% ~15%)
+            float cx = 0.5f, cy = 0.85f;
             for (int y = 0; y < size; y++)
                 for (int x = 0; x < size; x++)
                 {
                     float nx = (float)x / (size - 1);
                     float ny = (float)y / (size - 1);
-                    float d = Mathf.Sqrt((nx - cx) * (nx - cx) + (ny - cy) * (ny - cy));
-                    float t = Mathf.Clamp01(d / 0.95f);
+                    float dx = (nx - cx) * 0.85f; // yatayda daha geniş yayılım
+                    float dy = (ny - cy);
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    float t = Mathf.Clamp01(d / 0.72f);
                     tex.SetPixel(x, y, Color.Lerp(center, edge, t));
                 }
             tex.Apply();

@@ -35,12 +35,23 @@ namespace ZenTetris.Unity
         void DrawPiece(TetrominoType type, Vector3 origin, float scale, Color tint)
         {
             int color = Tetromino.ColorIndex(type);
-            foreach (var (x, y) in Tetromino.Cells(type, 0))
+            var cells = Tetromino.Cells(type, 0);
+
+            // Parçayı sınırlayıcı kutusunun merkezine göre ortala.
+            int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+            foreach (var (x, y) in cells)
+            {
+                if (x < minX) minX = x; if (x > maxX) maxX = x;
+                if (y < minY) minY = y; if (y > maxY) maxY = y;
+            }
+            float cx = (minX + maxX) / 2f, cy = (minY + maxY) / 2f;
+
+            foreach (var (x, y) in cells)
             {
                 var sr = Rent();
                 sr.sprite = BlockSprites.Solid(color);
                 sr.color = tint;
-                sr.transform.localPosition = origin + new Vector3(x * scale, y * scale, 0);
+                sr.transform.localPosition = origin + new Vector3((x - cx) * scale, (y - cy) * scale, 0);
                 sr.transform.localScale = Vector3.one * scale;
             }
         }
