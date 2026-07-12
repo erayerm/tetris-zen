@@ -21,4 +21,5 @@
 *.VC.db
 .vs/
 .idea/
+.vsconfig
 crashlytics-build.properties
