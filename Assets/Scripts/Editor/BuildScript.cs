@@ -22,6 +22,10 @@ public static class BuildScript
 
     public static void BuildWebGL()
     {
+        // GitHub Pages / statik hosting Brotli'yi doğru header'la sunmaz;
+        // decompression fallback ile loader kendi çözer.
+        PlayerSettings.WebGL.decompressionFallback = true;
+
         Run(new BuildPlayerOptions
         {
             scenes = Scenes,
