@@ -47,7 +47,7 @@ namespace ZenTetris.Unity
 
         void MakeLabel(string text, Vector3 pos, Color color)
         {
-            var t = MakeText("Label_" + text, pos, 4f, color);
+            var t = MakeText("Label_" + text, pos, 5.32f, color);
             t.text = text;
             t.characterSpacing = 10f;
         }
