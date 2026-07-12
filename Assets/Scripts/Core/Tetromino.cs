@@ -21,8 +21,8 @@ namespace ZenTetris.Core
 
         static (int x, int y)[][][] Build()
         {
-            var all = new (int x, int y)[7][][];
-            for (int t = 0; t < 7; t++)
+            var all = new (int x, int y)[Spawn.Length][][];
+            for (int t = 0; t < Spawn.Length; t++)
             {
                 all[t] = new (int x, int y)[4][];
                 all[t][0] = Spawn[t];
@@ -46,7 +46,7 @@ namespace ZenTetris.Core
         };
 
         public static (int x, int y)[] Cells(TetrominoType type, int rotation) =>
-            All[(int)type][((rotation % 4) + 4) % 4];
+            ((int x, int y)[])All[(int)type][((rotation % 4) + 4) % 4].Clone();
 
         public static int ColorIndex(TetrominoType type) => (int)type + 1;
     }
