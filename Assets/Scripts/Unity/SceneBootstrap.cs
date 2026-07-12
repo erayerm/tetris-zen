@@ -28,12 +28,20 @@ namespace ZenTetris.Unity
             cam.orthographic = true;
             cam.orthographicSize = 13f;
             cam.transform.position = new Vector3(5f, 10f, -10f);
-            cam.backgroundColor = new Color(0.16f, 0.35f, 0.20f); // placeholder arkaplan
+            cam.backgroundColor = Theme.BackgroundEdge; // degrade kadraj dışında kalırsa
 
-            // Board arkaplan paneli (yarı saydam siyah)
+            // Arkaplan degradesi (sıcak radial vignette)
+            var bg = new GameObject("Background");
+            var bgsr = bg.AddComponent<SpriteRenderer>();
+            bgsr.sprite = MakeGradientSprite(Theme.BackgroundCenter, Theme.BackgroundEdge);
+            bgsr.sortingOrder = -3;
+            bg.transform.position = new Vector3(5f, 10f, 0);
+            bg.transform.localScale = new Vector3(64f, 40f, 1f);
+
+            // Board arkaplan paneli (sıcak koyu zemin)
             var panel = new GameObject("BoardPanel");
             var psr = panel.AddComponent<SpriteRenderer>();
-            psr.sprite = MakeSolidSprite(new Color(0f, 0f, 0f, 0.82f));
+            psr.sprite = MakeSolidSprite(Theme.BoardBackground);
             psr.sortingOrder = -1;
             panel.transform.position = new Vector3(5f, 10f, 0);
             panel.transform.localScale = new Vector3(10f, 20f, 1f);
@@ -67,7 +75,7 @@ namespace ZenTetris.Unity
         {
             var go = new GameObject(name);
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = MakeSolidSprite(new Color(0f, 0f, 0f, 0.7f));
+            sr.sprite = MakeSolidSprite(Theme.Panel);
             sr.sortingOrder = -1;
             go.transform.position = pos;
             go.transform.localScale = scale;
@@ -81,13 +89,37 @@ namespace ZenTetris.Unity
             return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1);
         }
 
+        // Radial vignette: merkez sıcak, kenarlara doğru koyulaşan degrade.
+        static Sprite MakeGradientSprite(Color center, Color edge)
+        {
+            const int size = 256;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+            // Merkez üst-ortada (mockup: 50% 12%)
+            float cx = 0.5f, cy = 0.82f;
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float nx = (float)x / (size - 1);
+                    float ny = (float)y / (size - 1);
+                    float d = Mathf.Sqrt((nx - cx) * (nx - cx) + (ny - cy) * (ny - cy));
+                    float t = Mathf.Clamp01(d / 0.95f);
+                    tex.SetPixel(x, y, Color.Lerp(center, edge, t));
+                }
+            tex.Apply();
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        }
+
         static Sprite MakeGridSprite()
         {
             const int ppu = 32;
             int w = Board.Width * ppu, h = Board.VisibleHeight * ppu;
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
             var clear = new Color(0, 0, 0, 0);
-            var line = new Color(1f, 1f, 1f, 0.06f);
+            var line = Theme.GridLine;
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
                     tex.SetPixel(x, y, (x % ppu == 0 || y % ppu == 0) ? line : clear);

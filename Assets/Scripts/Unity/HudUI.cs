@@ -15,8 +15,11 @@ namespace ZenTetris.Unity
         {
             state = s;
             scoreText = MakeText("Score", new Vector3(5f, -1.2f, 0), 4f);
+            scoreText.color = Theme.TextMuted;
             levelText = MakeText("Level", new Vector3(5f, -2.6f, 0), 6f);
+            levelText.color = Theme.TextPrimary;
             pausedText = MakeText("Paused", new Vector3(5f, 10f, 0), 8f);
+            pausedText.color = Theme.Accent;
             pausedText.text = "PAUSED";
             state.Changed += Redraw;
             Redraw();

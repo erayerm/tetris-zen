@@ -9,49 +9,66 @@ namespace ZenTetris.Unity
         static readonly Dictionary<int, Sprite> solid = new();
         static readonly Dictionary<int, Sprite> ghost = new();
 
-        static readonly Color32[] Colors =
-        {
-            new(0, 0, 0, 0),          // 0: boş
-            new(50, 213, 200, 255),   // 1: I
-            new(230, 196, 64, 255),   // 2: O
-            new(184, 74, 200, 255),   // 3: T
-            new(150, 200, 60, 255),   // 4: S
-            new(230, 75, 85, 255),    // 5: Z
-            new(75, 100, 230, 255),   // 6: J
-            new(230, 138, 50, 255),   // 7: L
-        };
+        const int Margin = 1;   // hücreler arası ince saydam boşluk
+        const int Radius = 6;   // köşe yuvarlaklığı
 
-        public static Color32 ColorOf(int colorIndex) => Colors[colorIndex];
+        public static Color32 ColorOf(int colorIndex) => Theme.Blocks[colorIndex];
 
         public static Sprite Solid(int colorIndex) => Get(solid, colorIndex, 1f);
-        public static Sprite Ghost(int colorIndex) => Get(ghost, colorIndex, 0.3f);
+        public static Sprite Ghost(int colorIndex) => Get(ghost, colorIndex, 0.28f);
 
         static Sprite Get(Dictionary<int, Sprite> cache, int colorIndex, float alpha)
         {
             if (cache.TryGetValue(colorIndex, out var s)) return s;
 
-            var baseColor = (Color)Colors[colorIndex];
+            var baseColor = (Color)Theme.Blocks[colorIndex];
+            var highlight = baseColor * 1.14f; highlight.a = 1f; // üstte ince açık kenar
+
             var tex = new Texture2D(PPU, PPU, TextureFormat.RGBA32, false)
             {
-                filterMode = FilterMode.Point
+                filterMode = FilterMode.Bilinear
             };
-            var inner = baseColor * 1.15f; inner.a = 1f;   // iç parlak çerçeve
-            var edge = baseColor * 0.7f; edge.a = 1f;      // dış koyu kenar
+
+            int lo = Margin, hi = PPU - 1 - Margin;
+            var clear = new Color(0, 0, 0, 0);
+
             for (int y = 0; y < PPU; y++)
                 for (int x = 0; x < PPU; x++)
                 {
-                    Color c = baseColor;
-                    bool outerRim = x < 2 || y < 2 || x >= PPU - 2 || y >= PPU - 2;
-                    bool innerRim = !outerRim && (x < 5 || y < 5 || x >= PPU - 5 || y >= PPU - 5);
-                    if (outerRim) c = edge;
-                    else if (innerRim) c = inner;
+                    if (x < lo || x > hi || y < lo || y > hi || !InRoundedRect(x, y, lo, hi))
+                    {
+                        tex.SetPixel(x, y, clear);
+                        continue;
+                    }
+
+                    Color c = (y >= hi - 2) ? highlight : baseColor; // üst kenar parlaklığı
                     c.a = alpha;
                     tex.SetPixel(x, y, c);
                 }
+
             tex.Apply();
             var sprite = Sprite.Create(tex, new Rect(0, 0, PPU, PPU), new Vector2(0.5f, 0.5f), PPU);
             cache[colorIndex] = sprite;
             return sprite;
+        }
+
+        // Yuvarlatılmış dikdörtgen içi mi? Köşelerde çeyrek daire testi.
+        static bool InRoundedRect(int x, int y, int lo, int hi)
+        {
+            int r = Radius;
+            int left = lo + r, right = hi - r, bottom = lo + r, top = hi - r;
+            float cx = x, cy = y;
+            if (x < left && y < bottom) return Dist(cx, cy, left, bottom) <= r;
+            if (x > right && y < bottom) return Dist(cx, cy, right, bottom) <= r;
+            if (x < left && y > top) return Dist(cx, cy, left, top) <= r;
+            if (x > right && y > top) return Dist(cx, cy, right, top) <= r;
+            return true;
+        }
+
+        static float Dist(float x, float y, float ax, float ay)
+        {
+            float dx = x - ax, dy = y - ay;
+            return Mathf.Sqrt(dx * dx + dy * dy);
         }
     }
 }
