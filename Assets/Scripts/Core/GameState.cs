@@ -152,6 +152,10 @@ namespace ZenTetris.Core
                 return;
             }
 
+            // Yerden ayrıldıysa (ör. kenardan döndürme) lock delay birikimini sıfırla —
+            // inişte beklenmedik erken kilitlenmeyi önler.
+            lockTimer = 0f;
+
             gravityTimer += dt;
             while (gravityTimer >= step && Board.CanPlace(Active.Moved(0, -1)))
             {
