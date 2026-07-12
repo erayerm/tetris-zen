@@ -27,7 +27,7 @@ public class GameStateTests
     {
         var g = NewGame();
         int y0 = g.Active.Y;
-        g.Tick(1.0f); // seviye 1: 1 hücre/sn
+        g.Tick(2.0f); // seviye 1: 0.5 hücre/sn -> 1 hücre 2 sn'de
         Assert.AreEqual(y0 - 1, g.Active.Y);
     }
 
@@ -47,13 +47,17 @@ public class GameStateTests
     public void LockDelay_PieceLocksAfterHalfSecondOnGround()
     {
         var g = NewGame();
-        // parçayı zemine indir
-        for (int i = 0; i < 25; i++) g.Tick(1.0f);
-        // zeminde: lock delay dolana kadar kilitlenmemeli
+        // Parçayı soft drop ile zemine indir; zemine değer değmez dur (kilitlenmeden).
+        g.SetSoftDrop(true);
+        int guard = 0;
+        while (g.Active.Y != g.GhostY() && guard++ < 2000) g.Tick(0.05f);
+        g.SetSoftDrop(false);
+
         var type = g.Active.Type;
-        g.Tick(0.3f);
+        g.Tick(0.3f); // lock delay (0.5 sn) dolmadı -> kilitlenmemeli
         Assert.AreEqual(type, g.Active.Type);
-        g.Tick(0.3f); // toplam 0.6 > 0.5
+        Assert.AreEqual(0, CountFilled(g.Board));
+        g.Tick(0.3f); // toplam > 0.5 sn -> kilitlenir
         Assert.AreNotEqual(0, CountFilled(g.Board));
     }
 

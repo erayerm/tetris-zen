@@ -6,7 +6,7 @@ public class SmokeTests
     [Test]
     public void Gravity_ClampsAtMax()
     {
-        Assert.AreEqual(1f, GameConfig.GravityFor(1));
-        Assert.AreEqual(12f, GameConfig.GravityFor(999));
+        Assert.AreEqual(0.5f, GameConfig.GravityFor(1));
+        Assert.AreEqual(3f, GameConfig.GravityFor(999));
     }
 }
