@@ -85,7 +85,7 @@ namespace ZenTetris.Unity
             {
                 if (c.Y >= Board.VisibleHeight) continue;
                 var color = (Color)BlockSprites.ColorOf(c.Color);
-                Burst(new Vector3(c.X + 0.5f, c.Y + 0.5f, 0), color, 2, 2.6f, 0.11f); // 6 -> 2 (2/3 az)
+                Burst(new Vector3(c.X + 0.5f, c.Y + 0.5f, 0), color, 1, 2.6f, 0.11f); // hücre başına 1
             }
         }
 

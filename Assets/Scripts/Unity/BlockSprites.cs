@@ -44,7 +44,7 @@ namespace ZenTetris.Unity
             if (ghost.TryGetValue(colorIndex, out var s)) return s;
 
             var col = (Color)Theme.Blocks[colorIndex];
-            var frame = new Color(col.r, col.g, col.b, 0.55f);
+            var frame = new Color(col.r, col.g, col.b, 0.66f); // şeffaflık %25 azaltıldı
             var clear = new Color(0, 0, 0, 0);
 
             int lo = Margin, hi = PPU - 1 - Margin, t = 12;
