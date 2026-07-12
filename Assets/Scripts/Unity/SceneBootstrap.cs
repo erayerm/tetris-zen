@@ -126,15 +126,14 @@ namespace ZenTetris.Unity
             const int ppu = 64;              // bloklarla aynı oran (margin/radius), makul doku boyutu
             const int margin = 4, radius = 14;
             int w = Board.Width * ppu, h = Board.VisibleHeight * ppu;
-            var tex = RoundedTex.NewTex(w, h, FilterMode.Bilinear);
-            var clear = new Color(0, 0, 0, 0);
+            var tex = RoundedTex.NewTex(w, h, FilterMode.Trilinear, mip: true);
             var cell = Theme.EmptyCell;
             for (int py = 0; py < h; py++)
                 for (int px = 0; px < w; px++)
                 {
                     int lx = px % ppu, ly = py % ppu;
-                    tex.SetPixel(px, py,
-                        RoundedTex.Inside(lx, ly, margin, ppu - 1 - margin, radius) ? cell : clear);
+                    float cov = RoundedTex.Coverage(lx + 0.5f, ly + 0.5f, margin, ppu - 1 - margin, radius);
+                    tex.SetPixel(px, py, new Color(cell.r, cell.g, cell.b, cell.a * cov));
                 }
             tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), ppu);

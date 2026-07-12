@@ -26,13 +26,14 @@ namespace ZenTetris.Unity
             var highlight = baseColor * 1.12f; highlight.a = 1f;
 
             int lo = Margin, hi = PPU - 1 - Margin;
-            var tex = RoundedTex.NewTex(PPU, PPU, FilterMode.Bilinear);
-            var clear = new Color(0, 0, 0, 0);
+            var tex = RoundedTex.NewTex(PPU, PPU, FilterMode.Trilinear, mip: true);
             for (int y = 0; y < PPU; y++)
                 for (int x = 0; x < PPU; x++)
                 {
-                    if (!RoundedTex.Inside(x, y, lo, hi, Radius)) { tex.SetPixel(x, y, clear); continue; }
-                    tex.SetPixel(x, y, (y >= hi - 8) ? highlight : baseColor);
+                    float cov = RoundedTex.Coverage(x + 0.5f, y + 0.5f, lo, hi, Radius);
+                    Color c = (y >= hi - 8) ? highlight : baseColor;
+                    c.a = cov;
+                    tex.SetPixel(x, y, c);
                 }
             tex.Apply();
             return Cache(solid, colorIndex, tex);
@@ -44,17 +45,17 @@ namespace ZenTetris.Unity
             if (ghost.TryGetValue(colorIndex, out var s)) return s;
 
             var col = (Color)Theme.Blocks[colorIndex];
-            var frame = new Color(col.r, col.g, col.b, 0.35f);
-            var clear = new Color(0, 0, 0, 0);
+            const float ghostAlpha = 0.35f;
 
             int lo = Margin, hi = PPU - 1 - Margin, t = 12;
-            var tex = RoundedTex.NewTex(PPU, PPU, FilterMode.Bilinear);
+            var tex = RoundedTex.NewTex(PPU, PPU, FilterMode.Trilinear, mip: true);
             for (int y = 0; y < PPU; y++)
                 for (int x = 0; x < PPU; x++)
                 {
-                    bool outer = RoundedTex.Inside(x, y, lo, hi, Radius);
-                    bool inner = RoundedTex.Inside(x, y, lo + t, hi - t, Radius - 8);
-                    tex.SetPixel(x, y, (outer && !inner) ? frame : clear);
+                    float outer = RoundedTex.Coverage(x + 0.5f, y + 0.5f, lo, hi, Radius);
+                    float inner = RoundedTex.Coverage(x + 0.5f, y + 0.5f, lo + t, hi - t, Radius - 8);
+                    float ring = Mathf.Clamp01(outer - inner);   // yumuşak çerçeve
+                    tex.SetPixel(x, y, new Color(col.r, col.g, col.b, ring * ghostAlpha));
                 }
             tex.Apply();
             return Cache(ghost, colorIndex, tex);
