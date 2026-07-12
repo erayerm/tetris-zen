@@ -38,9 +38,13 @@ namespace ZenTetris.Unity
             bg.transform.position = new Vector3(5f, 10f, 0);
             bg.transform.localScale = new Vector3(64f, 40f, 1f);
 
+            // Board görselleri tek bir grup altında -> juice bounce hepsini birlikte sektirir
+            var boardGroup = new GameObject("BoardGroup");
+
             // Board arkaplanı (yuvarlak köşeli sıcak koyu panel, hücreleri çerçeveler)
-            MakeRoundedPanel("BoardPanel", new Vector3(5f, 10f, 0), new Vector2(10.6f, 20.6f),
-                             Theme.BoardBackground, 0.6f, -2);
+            var boardPanel = MakeRoundedPanel("BoardPanel", new Vector3(5f, 10f, 0),
+                             new Vector2(10.6f, 20.6f), Theme.BoardBackground, 0.6f, -2);
+            boardPanel.transform.SetParent(boardGroup.transform, true);
 
             // Boş hücreler (yuvarlak, boşluklu, soluk)
             var cells = new GameObject("Cells");
@@ -48,6 +52,7 @@ namespace ZenTetris.Unity
             csr.sprite = MakeCellsSprite();
             csr.sortingOrder = -1;
             cells.transform.position = new Vector3(5f, 10f, 0);
+            cells.transform.SetParent(boardGroup.transform, true);
 
             // Yan paneller (yuvarlak köşeli)
             MakeRoundedPanel("HoldPanel", new Vector3(-3.5f, 17.5f, 0), new Vector2(4f, 4f),
@@ -58,6 +63,7 @@ namespace ZenTetris.Unity
             // Bileşenler
             var renderer = new GameObject("BoardRenderer").AddComponent<BoardRenderer>();
             renderer.Init(state);
+            renderer.transform.SetParent(boardGroup.transform, true);
 
             var preview = new GameObject("Previews").AddComponent<PiecePreviewUI>();
             preview.Init(state, new Vector3(-3.5f, 16.4f, 0), new Vector3(12.5f, 16.8f, 0));
@@ -65,12 +71,16 @@ namespace ZenTetris.Unity
             var hud = new GameObject("Hud").AddComponent<HudUI>();
             hud.Init(state);
 
+            // Juice: bounce + partiküller (board grubunu sektirir)
+            var juice = new GameObject("Juice").AddComponent<Juice>();
+            juice.Init(state, boardGroup.transform);
+
             var controller = gameObject.AddComponent<GameController>();
             controller.Init(state);
         }
 
-        static void MakeRoundedPanel(string name, Vector3 pos, Vector2 size, Color color,
-                                     float radiusUnits, int order)
+        static GameObject MakeRoundedPanel(string name, Vector3 pos, Vector2 size, Color color,
+                                           float radiusUnits, int order)
         {
             var go = new GameObject(name);
             var sr = go.AddComponent<SpriteRenderer>();
@@ -80,6 +90,7 @@ namespace ZenTetris.Unity
             sr.size = size;
             sr.sortingOrder = order;
             go.transform.position = pos;
+            return go;
         }
 
         // Radial vignette: üstte sıcak, kenarlara/aşağıya doğru koyulaşan degrade.

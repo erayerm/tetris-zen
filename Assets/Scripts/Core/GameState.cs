@@ -17,6 +17,8 @@ namespace ZenTetris.Core
 
         public event Action Changed;
         public event Action<int> LinesCleared;
+        public event Action<Piece> PieceLocked;                 // her kilitlenen taş (juice için)
+        public event Action<IReadOnlyList<Cell>> RowsCleared;   // silinen hücreler + renkleri
 
         bool holdUsed;
         bool softDrop;
@@ -184,12 +186,34 @@ namespace ZenTetris.Core
 
             var tspin = DetectTSpin();
             Board.Lock(Active);
+            PieceLocked?.Invoke(Active);
 
+            var clearedCells = CollectFullRowCells();
             int lines = Board.ClearFullLines();
             Score.OnPieceLocked(lines, tspin);
-            if (lines > 0) LinesCleared?.Invoke(lines);
+            if (lines > 0)
+            {
+                LinesCleared?.Invoke(lines);
+                RowsCleared?.Invoke(clearedCells);
+            }
 
             Spawn();
+        }
+
+        // Silinmeden hemen önce dolu satırların hücrelerini (konum + renk) toplar.
+        List<Cell> CollectFullRowCells()
+        {
+            var list = new List<Cell>();
+            for (int y = 0; y < Board.Height; y++)
+            {
+                bool full = true;
+                for (int x = 0; x < Board.Width; x++)
+                    if (Board.Get(x, y) == 0) { full = false; break; }
+                if (!full) continue;
+                for (int x = 0; x < Board.Width; x++)
+                    list.Add(new Cell(x, y, Board.Get(x, y)));
+            }
+            return list;
         }
 
         TSpinKind DetectTSpin()
