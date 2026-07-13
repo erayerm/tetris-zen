@@ -10,27 +10,59 @@ namespace ZenTetris.Unity
         float arrTimer;
         int heldDir; // -1 sol, +1 sağ, 0 yok
 
+        const float StickDeadzone = 0.5f;
+
         public InputHandler(GameState state) => this.state = state;
 
         public void Update(float dt)
         {
             var kb = Keyboard.current;
-            if (kb == null) return;
+            var gp = Gamepad.current;
+            if (kb == null && gp == null) return;
 
-            if (kb.escapeKey.wasPressedThisFrame) state.Paused = !state.Paused;
+            float sx = gp != null ? gp.leftStick.x.ReadValue() : 0f;
+            float sy = gp != null ? gp.leftStick.y.ReadValue() : 0f;
 
-            // Rotasyon / drop / hold — kenar tetiklemeli
-            if (kb.upArrowKey.wasPressedThisFrame || kb.xKey.wasPressedThisFrame) state.RotateCW();
-            if (kb.zKey.wasPressedThisFrame) state.RotateCCW();
-            if (kb.spaceKey.wasPressedThisFrame) state.HardDrop();
-            if (kb.cKey.wasPressedThisFrame || kb.leftShiftKey.wasPressedThisFrame) state.TryHold();
+            // Kenar tetiklemeli aksiyonlar (klavye VEYA gamepad)
+            bool pause = (kb?.escapeKey.wasPressedThisFrame ?? false)
+                       || (gp?.startButton.wasPressedThisFrame ?? false);
+            bool cw = (kb?.upArrowKey.wasPressedThisFrame ?? false)
+                    || (kb?.xKey.wasPressedThisFrame ?? false)
+                    || (gp?.buttonSouth.wasPressedThisFrame ?? false);   // A
+            bool ccw = (kb?.zKey.wasPressedThisFrame ?? false)
+                     || (gp?.buttonEast.wasPressedThisFrame ?? false)    // B
+                     || (gp?.buttonWest.wasPressedThisFrame ?? false);   // X
+            bool hard = (kb?.spaceKey.wasPressedThisFrame ?? false)
+                      || (gp?.buttonNorth.wasPressedThisFrame ?? false)  // Y
+                      || (gp?.dpad.up.wasPressedThisFrame ?? false);
+            bool hold = (kb?.cKey.wasPressedThisFrame ?? false)
+                      || (kb?.leftShiftKey.wasPressedThisFrame ?? false)
+                      || (gp?.leftShoulder.wasPressedThisFrame ?? false)  // LB
+                      || (gp?.rightShoulder.wasPressedThisFrame ?? false);// RB
 
-            state.SetSoftDrop(kb.downArrowKey.isPressed);
+            if (pause) state.Paused = !state.Paused;
+            if (cw) state.RotateCW();
+            if (ccw) state.RotateCCW();
+            if (hard) state.HardDrop();
+            if (hold) state.TryHold();
 
-            // Yatay hareket — DAS/ARR
+            // Soft drop (basılı)
+            bool soft = (kb?.downArrowKey.isPressed ?? false)
+                      || (gp?.dpad.down.isPressed ?? false)
+                      || sy < -StickDeadzone;
+            state.SetSoftDrop(soft);
+
+            // Yatay hareket — DAS/ARR (klavye ok / d-pad / sol analog)
+            bool left = (kb?.leftArrowKey.isPressed ?? false)
+                      || (gp?.dpad.left.isPressed ?? false)
+                      || sx < -StickDeadzone;
+            bool right = (kb?.rightArrowKey.isPressed ?? false)
+                       || (gp?.dpad.right.isPressed ?? false)
+                       || sx > StickDeadzone;
+
             int dir = 0;
-            if (kb.leftArrowKey.isPressed) dir -= 1;
-            if (kb.rightArrowKey.isPressed) dir += 1;
+            if (left) dir -= 1;
+            if (right) dir += 1;
 
             if (dir != heldDir)
             {
