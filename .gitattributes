@@ -1,8 +1,6 @@
 # GitHub Linguist: üçüncü-taraf/otomatik dosyaları dil istatistiğinden hariç tut.
 # Kendi yazdığımız kod C# (Assets/Scripts). Shader'lar TMP + URP ile gelir.
 
-Assets/TextMesh Pro/**        linguist-vendored
-Assets/Settings/**            linguist-generated
 *.shader                      linguist-vendored
 *.compute                     linguist-vendored
 *.cginc                       linguist-vendored
