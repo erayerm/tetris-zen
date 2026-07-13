@@ -16,8 +16,23 @@ public static class BuildScript
         AssetDatabase.Refresh();
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Icon.png");
         if (tex == null) { Debug.LogWarning("Icon.png bulunamadı, varsayılan ikon kullanılacak."); return; }
-        PlayerSettings.SetIcons(NamedBuildTarget.Standalone, new[] { tex }, IconKind.Application);
-        PlayerSettings.SetIcons(NamedBuildTarget.WebGL, new[] { tex }, IconKind.Any);
+        ApplyIconFor(NamedBuildTarget.Standalone, IconKind.Application, tex);
+        ApplyIconFor(NamedBuildTarget.WebGL, IconKind.Any, tex);
+    }
+
+    // İlgili platformun BÜTÜN ikon boyutu slotlarını aynı görselle doldurur
+    // (tek boyut vermek exe'ye ikonu gömmüyordu).
+    static void ApplyIconFor(NamedBuildTarget target, IconKind kind, Texture2D tex)
+    {
+        var sizes = PlayerSettings.GetIconSizes(target, kind);
+        if (sizes == null || sizes.Length == 0)
+        {
+            PlayerSettings.SetIcons(target, new[] { tex }, kind);
+            return;
+        }
+        var icons = new Texture2D[sizes.Length];
+        for (int i = 0; i < icons.Length; i++) icons[i] = tex;
+        PlayerSettings.SetIcons(target, icons, kind);
     }
 
     public static void BuildWindows()
