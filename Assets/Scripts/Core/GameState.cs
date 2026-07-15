@@ -44,6 +44,19 @@ namespace ZenTetris.Core
             Changed?.Invoke();
         }
 
+        // Yeni oyun: tahtayı, skoru, hold ve sırayı sıfırla.
+        public void Reset()
+        {
+            Board.ClearAll();
+            Score.Load(0, 0);
+            Held = null;
+            holdUsed = false;
+            softDrop = false;
+            next.Clear();
+            for (int i = 0; i < GameConfig.NextQueueSize; i++) next.Add(bag.Next());
+            Spawn();
+        }
+
         void Spawn()
         {
             var type = next[0];

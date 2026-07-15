@@ -10,7 +10,6 @@ namespace ZenTetris.Unity
         GameState state;
         TextMeshPro scoreText;
         TextMeshPro levelText;
-        TextMeshPro pausedText;
         readonly List<TextMeshPro> labels = new();      // HOLD / NEXT (muted)
         readonly List<SpriteRenderer> pips = new();      // accent
 
@@ -25,9 +24,6 @@ namespace ZenTetris.Unity
             levelText = MakeText("Level", new Vector3(5f, -2.9f, 0), 13f);
             MakePips(new Vector3(5f, -4.2f, 0));
 
-            pausedText = MakeText("Paused", new Vector3(5f, 10f, 0), 12f);
-            pausedText.text = "PAUSED";
-
             state.Changed += Redraw;
             Redraw();
         }
@@ -37,7 +33,6 @@ namespace ZenTetris.Unity
         {
             if (scoreText != null) scoreText.color = muted;
             if (levelText != null) levelText.color = primary;
-            if (pausedText != null) pausedText.color = accent;
             foreach (var l in labels) l.color = muted;
             foreach (var p in pips) p.color = accent;
         }
@@ -101,13 +96,6 @@ namespace ZenTetris.Unity
         {
             scoreText.text = state.Score.Score.ToString("N0");
             levelText.text = state.Score.Level.ToString();
-            pausedText.gameObject.SetActive(state.Paused);
-        }
-
-        void Update()
-        {
-            if (state != null && pausedText.gameObject.activeSelf != state.Paused)
-                pausedText.gameObject.SetActive(state.Paused);
         }
 
         void OnDestroy()

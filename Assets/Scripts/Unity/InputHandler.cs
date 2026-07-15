@@ -23,9 +23,8 @@ namespace ZenTetris.Unity
             float sx = gp != null ? gp.leftStick.x.ReadValue() : 0f;
             float sy = gp != null ? gp.leftStick.y.ReadValue() : 0f;
 
-            // Kenar tetiklemeli aksiyonlar (klavye VEYA gamepad)
-            bool pause = (kb?.escapeKey.wasPressedThisFrame ?? false)
-                       || (gp?.startButton.wasPressedThisFrame ?? false);
+            // Kenar tetiklemeli aksiyonlar (klavye VEYA gamepad).
+            // Pause (Esc/Start) AppController tarafından yönetilir.
             bool cw = (kb?.upArrowKey.wasPressedThisFrame ?? false)
                     || (kb?.xKey.wasPressedThisFrame ?? false)
                     || (gp?.buttonSouth.wasPressedThisFrame ?? false);   // A
@@ -40,7 +39,6 @@ namespace ZenTetris.Unity
                       || (gp?.leftShoulder.wasPressedThisFrame ?? false)  // LB
                       || (gp?.rightShoulder.wasPressedThisFrame ?? false);// RB
 
-            if (pause) state.Paused = !state.Paused;
             if (cw) state.RotateCW();
             if (ccw) state.RotateCCW();
             if (hard) state.HardDrop();

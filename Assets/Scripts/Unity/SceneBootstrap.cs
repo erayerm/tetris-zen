@@ -81,6 +81,10 @@ namespace ZenTetris.Unity
 
             var controller = gameObject.AddComponent<GameController>();
             controller.Init(state);
+
+            // Uygulama akışı: menü / geri sayım / pause (oyunu menüden başlatır)
+            var app = new GameObject("App").AddComponent<AppController>();
+            app.Init(state, controller);
         }
 
         // Beyaz basılı yuvarlak panel; gerçek renk sr.color ile verilir (temayla lerp).
