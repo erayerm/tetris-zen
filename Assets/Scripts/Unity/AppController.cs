@@ -66,7 +66,7 @@ namespace ZenTetris.Unity
             controller.enabled = false;
             state.Paused = true;
             SaveSystem.Save(state);
-            statText.text = $"Son skor {state.Score.Score:N0}  ·  Seviye {state.Score.Level}";
+            statText.text = $"Last score {state.Score.Score:N0}  ·  Level {state.Score.Level}";
             menuPanel.SetActive(true);
             if (headerRect != null) LayoutRebuilder.ForceRebuildLayoutImmediate(headerRect);
             howToPanel.SetActive(false);
@@ -224,10 +224,10 @@ namespace ZenTetris.Unity
 
             BuildHeader(menuPanel.transform);
 
-            MenuButton("Devam Et", 70, true, () => StartGame(false));
-            MenuButton("Yeni Oyun", 10, false, ConfirmNewGame);
-            MenuButton("Nasıl Oynanır", -50, false, () => howToPanel.SetActive(true));
-            var quit = MenuButton("Çıkış", -110, false, DoQuit);
+            MenuButton("Continue", 70, true, () => StartGame(false));
+            MenuButton("New Game", 10, false, ConfirmNewGame);
+            MenuButton("How to Play", -50, false, () => howToPanel.SetActive(true));
+            var quit = MenuButton("Quit", -110, false, DoQuit);
             if (Application.platform == RuntimePlatform.WebGLPlayer) quit.SetActive(false);
 
             statText = Label("Stat", menuPanel.transform, "", 26, Muted, new Vector2(0, -210), new Vector2(800, 40));
@@ -294,7 +294,7 @@ namespace ZenTetris.Unity
         {
             if (confirming) return;
             confirming = true;
-            statText.text = "Kayıtlı ilerleme silinecek — tekrar Yeni Oyun'a bas.";
+            statText.text = "Saved progress will be erased — press New Game again.";
             // ikinci basışı yakalamak için buton davranışını değiştir
             newGameArmed = true;
         }
@@ -313,14 +313,14 @@ namespace ZenTetris.Unity
             prt.sizeDelta = new Vector2(720, 420);
             prt.anchoredPosition = Vector2.zero;
 
-            Label("HowTitle", panel.transform, "Nasıl Oynanır", 34, Cream, new Vector2(0, 160), new Vector2(600, 50));
+            Label("HowTitle", panel.transform, "How to Play", 34, Cream, new Vector2(0, 160), new Vector2(600, 50));
 
-            string kb = "Hareket    ← →\nYumuşak düşüş    ↓\nSert düşüş    Space\nDöndür    ↑ · X · Z\nHold    C · Shift\nDuraklat    Esc";
-            string gp = "Hareket    D-pad / analog\nYumuşak düşüş    aşağı\nSert düşüş    Y\nDöndür    A · B · X\nHold    LB · RB\nDuraklat    Start";
-            Label("KbCol", panel.transform, "Klavye\n\n" + kb, 22, Cream, new Vector2(-170, -10), new Vector2(320, 320));
+            string kb = "Move    ← →\nSoft drop    ↓\nHard drop    Space\nRotate    ↑ · X · Z\nHold    C · Shift\nPause    Esc";
+            string gp = "Move    D-pad / stick\nSoft drop    down\nHard drop    Y\nRotate    A · B · X\nHold    LB · RB\nPause    Start";
+            Label("KbCol", panel.transform, "Keyboard\n\n" + kb, 22, Cream, new Vector2(-170, -10), new Vector2(320, 320));
             Label("GpCol", panel.transform, "Gamepad\n\n" + gp, 22, Cream, new Vector2(170, -10), new Vector2(320, 320));
 
-            var back = Button("Back", panel.transform, "← Geri", false, new Vector2(0, -175), new Vector2(160, 44),
+            var back = Button("Back", panel.transform, "← Back", false, new Vector2(0, -175), new Vector2(160, 44),
                               () => howToPanel.SetActive(false), out _);
             back.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -175);
 
@@ -411,13 +411,13 @@ namespace ZenTetris.Unity
         // Yeni Oyun onay akışı: silme uyarısından sonra ikinci basış sıfırlar.
         void OnMenuButton(string text, System.Action onClick)
         {
-            if (text == "Yeni Oyun" && newGameArmed)
+            if (text == "New Game" && newGameArmed)
             {
                 newGameArmed = false; confirming = false;
                 StartGame(true);
                 return;
             }
-            if (text != "Yeni Oyun") { newGameArmed = false; confirming = false; }
+            if (text != "New Game") { newGameArmed = false; confirming = false; }
             onClick();
         }
 
