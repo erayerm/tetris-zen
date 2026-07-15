@@ -30,10 +30,14 @@ namespace ZenTetris.Unity
         TextMeshPro centerText;
         SpriteRenderer dim;
 
+        static readonly Color CardBg = new Color(0.20f, 0.15f, 0.19f, 1f);   // opak panel
+        static readonly Color IconBtnBg = new Color(0.10f, 0.07f, 0.10f, 0.5f);
+
         // uGUI
         GameObject menuPanel, howToPanel, gameUiPanel;
-        TextMeshProUGUI statText, pauseLabel;
-        Sprite roundSprite, solidSprite;
+        TextMeshProUGUI statText;
+        Image pauseIcon;
+        Sprite roundSprite, solidSprite, spPause, spPlay, spHome;
 
         public void Init(GameState s, GameController c)
         {
@@ -42,6 +46,9 @@ namespace ZenTetris.Unity
 
             roundSprite = RoundedTex.RoundedPanel(48);
             solidSprite = SolidSprite();
+            spPause = IconPause();
+            spPlay = IconPlay();
+            spHome = IconHome();
 
             BuildWorldOverlay();
             BuildCanvas();
@@ -95,7 +102,7 @@ namespace ZenTetris.Unity
             dim.gameObject.SetActive(false);
             state.Paused = false;
             controller.enabled = true;
-            SetPauseLabel(false);
+            SetPauseIcon(false);
         }
 
         void Pause()
@@ -106,7 +113,7 @@ namespace ZenTetris.Unity
             dim.gameObject.SetActive(true);
             centerText.gameObject.SetActive(true);
             centerText.text = "PAUSED";
-            SetPauseLabel(true);
+            SetPauseIcon(true);
         }
 
         void Resume()
@@ -116,7 +123,7 @@ namespace ZenTetris.Unity
             state.Paused = false;
             dim.gameObject.SetActive(false);
             centerText.gameObject.SetActive(false);
-            SetPauseLabel(false);
+            SetPauseIcon(false);
         }
 
         void TogglePause()
@@ -125,7 +132,11 @@ namespace ZenTetris.Unity
             else if (st == AppState.Paused) Resume();
         }
 
-        void SetPauseLabel(bool paused) => pauseLabel.text = paused ? "Devam" : "Duraklat";
+        // Pause'dayken "devam" (play) ikonu, oynarken "duraklat" ikonu.
+        void SetPauseIcon(bool paused)
+        {
+            if (pauseIcon != null) pauseIcon.sprite = paused ? spPlay : spPause;
+        }
 
         void Update()
         {
@@ -209,7 +220,7 @@ namespace ZenTetris.Unity
             var grad = MakeImage("Grad", menuPanel.transform, GradientSprite(Dusk.BgCenter, Dusk.BgEdge), Color.white);
             Stretch(grad.rectTransform);
 
-            Label("Title", menuPanel.transform, "ZEN TETRIS", 64, Cream, new Vector2(0, 210), new Vector2(700, 90));
+            BuildHeader(menuPanel.transform);
 
             MenuButton("Devam Et", 70, true, () => StartGame(false));
             MenuButton("Yeni Oyun", 10, false, ConfirmNewGame);
@@ -218,6 +229,56 @@ namespace ZenTetris.Unity
             if (Application.platform == RuntimePlatform.WebGLPlayer) quit.SetActive(false);
 
             statText = Label("Stat", menuPanel.transform, "", 26, Muted, new Vector2(0, -210), new Vector2(800, 40));
+        }
+
+        // Başlık: T-parçası logosu + kalın "ZEN TETRIS" (onaylanan tasarım).
+        void BuildHeader(Transform parent)
+        {
+            var header = new GameObject("Header", typeof(RectTransform));
+            header.transform.SetParent(parent, false);
+            var hrt = (RectTransform)header.transform;
+            hrt.anchoredPosition = new Vector2(0, 205);
+            hrt.sizeDelta = new Vector2(760, 96);
+            var h = header.AddComponent<HorizontalLayoutGroup>();
+            h.childAlignment = TextAnchor.MiddleCenter;
+            h.spacing = 20;
+            h.childControlWidth = false; h.childControlHeight = false;
+            h.childForceExpandWidth = false; h.childForceExpandHeight = false;
+
+            // T logosu (mor bloklar)
+            var logo = new GameObject("Logo", typeof(RectTransform));
+            logo.transform.SetParent(header.transform, false);
+            var lrt = (RectTransform)logo.transform;
+            const float bs = 26f, gap = 2f;
+            lrt.sizeDelta = new Vector2(3 * bs + 2 * gap, 2 * bs + gap);
+            logo.AddComponent<LayoutElement>().preferredWidth = lrt.sizeDelta.x;
+            logo.GetComponent<LayoutElement>().preferredHeight = lrt.sizeDelta.y;
+            var tSprite = BlockSprites.Solid(3); // T = mor
+            foreach (var (cx, cy) in new[] { (0, 0), (1, 0), (2, 0), (1, 1) })
+            {
+                var b = new GameObject("blk", typeof(RectTransform));
+                b.transform.SetParent(logo.transform, false);
+                var img = b.AddComponent<Image>();
+                img.sprite = tSprite; img.color = Color.white;
+                var brt = img.rectTransform;
+                brt.sizeDelta = new Vector2(bs, bs);
+                brt.anchorMin = brt.anchorMax = brt.pivot = Vector2.zero;
+                brt.anchoredPosition = new Vector2(cx * (bs + gap), cy * (bs + gap));
+            }
+
+            // Başlık (kalın)
+            var title = new GameObject("Title", typeof(RectTransform));
+            title.transform.SetParent(header.transform, false);
+            var t = title.AddComponent<TextMeshProUGUI>();
+            FontProvider.Apply(t);
+            t.text = "ZEN TETRIS";
+            t.fontSize = 62;
+            t.color = Cream;
+            t.fontStyle = FontStyles.Bold;
+            t.alignment = TextAlignmentOptions.Left;
+            var csf = title.AddComponent<ContentSizeFitter>();
+            csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
         // "Yeni Oyun" onayı: statText'i geçici olarak onay satırına çevir.
@@ -237,9 +298,9 @@ namespace ZenTetris.Unity
             howToPanel = FullPanel("HowToPanel", parent);
             var shade = howToPanel.AddComponent<Image>();
             shade.sprite = solidSprite;
-            shade.color = new Color(0.10f, 0.07f, 0.10f, 0.72f);
+            shade.color = new Color(0.06f, 0.04f, 0.06f, 0.85f);
 
-            var panel = MakeImage("Card", howToPanel.transform, roundSprite, PanelBtn);
+            var panel = MakeImage("Card", howToPanel.transform, roundSprite, CardBg); // opak
             panel.type = Image.Type.Sliced;
             var prt = panel.rectTransform;
             prt.sizeDelta = new Vector2(720, 420);
@@ -262,16 +323,33 @@ namespace ZenTetris.Unity
         void BuildGameUiPanel(Transform parent)
         {
             gameUiPanel = FullPanel("GameUiPanel", parent);
-            // Sağ üst köşe butonları
-            var pause = Button("PauseBtn", gameUiPanel.transform, "Duraklat", false,
-                               Vector2.zero, new Vector2(120, 40), TogglePause, out pauseLabel);
-            AnchorTopRight(pause.GetComponent<RectTransform>(), new Vector2(-150, -18));
-
-            var home = Button("HomeBtn", gameUiPanel.transform, "Menü", false,
-                              Vector2.zero, new Vector2(90, 40), ShowMenu, out _);
-            AnchorTopRight(home.GetComponent<RectTransform>(), new Vector2(-52, -18));
-
+            // Sağ üst köşe: ikon-only butonlar (koddan çizilmiş ikonlar)
+            IconButton("PauseBtn", gameUiPanel.transform, spPause, new Vector2(-68, -16), TogglePause, out pauseIcon);
+            IconButton("HomeBtn", gameUiPanel.transform, spHome, new Vector2(-14, -16), ShowMenu, out _);
             gameUiPanel.SetActive(false);
+        }
+
+        void IconButton(string name, Transform parent, Sprite icon, Vector2 pos, System.Action onClick, out Image iconImg)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var bg = go.AddComponent<Image>();
+            bg.sprite = roundSprite; bg.type = Image.Type.Sliced; bg.color = IconBtnBg;
+            var rt = bg.rectTransform;
+            rt.sizeDelta = new Vector2(46, 46);
+            AnchorTopRight(rt, pos);
+            var btn = go.AddComponent<Button>();
+            var act = onClick; btn.onClick.AddListener(() => act());
+
+            var ic = new GameObject("Icon", typeof(RectTransform));
+            ic.transform.SetParent(go.transform, false);
+            iconImg = ic.AddComponent<Image>();
+            iconImg.sprite = icon; iconImg.color = Cream;
+            iconImg.raycastTarget = false;
+            var irt = iconImg.rectTransform;
+            irt.anchorMin = irt.anchorMax = new Vector2(0.5f, 0.5f);
+            irt.sizeDelta = new Vector2(24, 24);
+            irt.anchoredPosition = Vector2.zero;
         }
 
         void DoQuit()
@@ -376,6 +454,64 @@ namespace ZenTetris.Unity
             tex.SetPixel(0, 0, Color.white); tex.Apply();
             return Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1);
         }
+
+        // ---------- İkonlar (koddan çizilir, beyaz; renk Image.color ile) ----------
+
+        const int IcN = 64;
+
+        static Texture2D NewIcon()
+        {
+            var t = new Texture2D(IcN, IcN, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+            var clear = new Color(0, 0, 0, 0);
+            for (int y = 0; y < IcN; y++)
+                for (int x = 0; x < IcN; x++) t.SetPixel(x, y, clear);
+            return t;
+        }
+        static Sprite IconSprite(Texture2D t) => Sprite.Create(t, new Rect(0, 0, IcN, IcN), new Vector2(0.5f, 0.5f), IcN);
+
+        static Sprite IconPause()
+        {
+            var t = NewIcon();
+            for (int y = 14; y <= 50; y++)
+                for (int x = 0; x < IcN; x++)
+                    if ((x >= 18 && x <= 28) || (x >= 36 && x <= 46)) t.SetPixel(x, y, Color.white);
+            t.Apply(); return IconSprite(t);
+        }
+
+        static Sprite IconPlay()
+        {
+            var t = NewIcon();
+            var a = new Vector2(22, 12); var b = new Vector2(22, 52); var c = new Vector2(50, 32);
+            for (int y = 0; y < IcN; y++)
+                for (int x = 0; x < IcN; x++)
+                    if (InTriangle(x + 0.5f, y + 0.5f, a, b, c)) t.SetPixel(x, y, Color.white);
+            t.Apply(); return IconSprite(t);
+        }
+
+        static Sprite IconHome()
+        {
+            var t = NewIcon();
+            var apex = new Vector2(32, 54); var bl = new Vector2(10, 32); var br = new Vector2(54, 32);
+            for (int y = 0; y < IcN; y++)
+                for (int x = 0; x < IcN; x++)
+                {
+                    bool roof = InTriangle(x + 0.5f, y + 0.5f, apex, bl, br);
+                    bool body = x >= 18 && x <= 46 && y >= 12 && y <= 32;
+                    bool door = x >= 28 && x <= 36 && y >= 12 && y <= 26; // kapı boşluğu
+                    if ((roof || body) && !door) t.SetPixel(x, y, Color.white);
+                }
+            t.Apply(); return IconSprite(t);
+        }
+
+        static bool InTriangle(float px, float py, Vector2 a, Vector2 b, Vector2 c)
+        {
+            float d1 = Cross(px, py, a, b), d2 = Cross(px, py, b, c), d3 = Cross(px, py, c, a);
+            bool neg = d1 < 0 || d2 < 0 || d3 < 0;
+            bool pos = d1 > 0 || d2 > 0 || d3 > 0;
+            return !(neg && pos);
+        }
+        static float Cross(float px, float py, Vector2 a, Vector2 b)
+            => (px - b.x) * (a.y - b.y) - (a.x - b.x) * (py - b.y);
 
         static Sprite GradientSprite(Color center, Color edge)
         {
