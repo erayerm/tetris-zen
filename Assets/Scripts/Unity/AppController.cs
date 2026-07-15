@@ -35,6 +35,7 @@ namespace ZenTetris.Unity
 
         // uGUI
         GameObject menuPanel, howToPanel, gameUiPanel;
+        RectTransform headerRect;
         TextMeshProUGUI statText;
         Image pauseIcon;
         Sprite roundSprite, solidSprite, spPause, spPlay, spHome;
@@ -67,6 +68,7 @@ namespace ZenTetris.Unity
             SaveSystem.Save(state);
             statText.text = $"Son skor {state.Score.Score:N0}  ·  Seviye {state.Score.Level}";
             menuPanel.SetActive(true);
+            if (headerRect != null) LayoutRebuilder.ForceRebuildLayoutImmediate(headerRect);
             howToPanel.SetActive(false);
             gameUiPanel.SetActive(false);
             centerText.gameObject.SetActive(false);
@@ -237,6 +239,7 @@ namespace ZenTetris.Unity
             var header = new GameObject("Header", typeof(RectTransform));
             header.transform.SetParent(parent, false);
             var hrt = (RectTransform)header.transform;
+            headerRect = hrt;
             hrt.anchoredPosition = new Vector2(0, 205);
             hrt.sizeDelta = new Vector2(760, 96);
             var h = header.AddComponent<HorizontalLayoutGroup>();
@@ -279,6 +282,10 @@ namespace ZenTetris.Unity
             var csf = title.AddComponent<ContentSizeFitter>();
             csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            // İlk karede yazı genişliği hesaplanmadan yerleşme bug'ını önle.
+            t.ForceMeshUpdate();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(hrt);
         }
 
         // "Yeni Oyun" onayı: statText'i geçici olarak onay satırına çevir.
